@@ -1,0 +1,59 @@
+# GitHub Actions cron job — statik dosyaları ve manifest'i doğrular.
+# Not: GitHub Pages statik olduğundan, bu iş yalnızca derleme/zamanlama denetimi yapar;
+# gerçek e-posta yönlendirmesi çalıştırmaz.
+name: Posta Yönlendirme Denetimi
+
+on:
+  schedule:
+    - cron: '0 6 * * *'  # Her gün 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Dosya bütünlüğü kontrolü
+        run: |
+          set -e
+          for f in index.html style.css script.js sw.js README.md; do
+            if [ ! -f "$f" ]; then
+              echo "Eksik dosya: $f" >&2
+              exit 1
+            fi
+          done
+          echo "Tüm gerekli dosyalar mevcut."
+
+      - name: HTML doğrulama (basit)
+        run: |
+          if ! grep -q '<!DOCTYPE html>' index.html; then
+            echo "index.html DOCTYPE içermiyor" >&2; exit 1;
+          fi
+          echo "HTML doğrulandı."
+
+      - name: JS sözdizimi kontrolü
+        run: |
+          if ! command -v node >/dev/null 2>&1; then
+            echo "node yok, atlanıyor"; exit 0;
+          fi
+          node --check script.js
+          node --check sw.js
+          echo "JS sözdizimi geçerli."
+
+      - name: Manifest denetimi
+        run: |
+          if ! grep -q 'manifest.webmanifest' index.html; then
+            echo "manifest bağlantısı eksik" >&2; exit 1;
+          fi
+          echo "Manifest referansı mevcut."
+
+      - name: Özet
+        run: |
+          echo "### Posta Yönlendirme Denetimi" >> $GITHUB_STEP_SUMMARY
+          echo "- Tarih: $(date -u +%Y-%m-%dT%H:%M:%SZ)" >> $GITHUB_STEP_SUMMARY
+          echo "- Durum: Başarılı" >> $GITHUB_STEP_SUMMARY
+          echo "- Not: GitHub Pages statiktir; gerçek SMTP iletimi bu işin kapsamı dışındadır." >> $GITHUB_STEP_SUMMARY
