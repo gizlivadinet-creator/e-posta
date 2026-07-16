@@ -65,7 +65,7 @@
       <div class="panel__head">
         <div>
           <h1 class="panel__title">Form Gönder</h1>
-          <p class="panel__subtitle">Form verileri FormSubmit.co üzerinden <code id="submitTargetDisplay">submissions@formsubmit.co</code> adresine e-posta olarak gönderilir.</p>
+          <p class="panel__subtitle">Form, <code id="submitAliasDisplay">info@alanadi.com</code> adresine gönderilmiş gibi görünür; FormSubmit.co bu içeriği gerçek e-postanız <code id="submitTargetDisplay">hamdiuludag@gmail.com</code> adresine iletir.</p>
         </div>
       </div>
 
@@ -122,9 +122,14 @@
             <small>Örn. <code>router</code> → <code>/router?to=...</code></small>
           </div>
           <div class="field">
-            <label for="cfg-formsubmit">FormSubmit hedef adresi</label>
-            <input type="email" id="cfg-formsubmit" placeholder="submissions@formsubmit.co" />
-            <small>Form gönderimlerinin iletileceği FormSubmit.co e-posta adresi.</small>
+            <label for="cfg-alias">Halka açık (sahte) adres</label>
+            <input type="text" id="cfg-alias" placeholder="info@alanadi.com" />
+            <small>Kullanıcının gördüğü ve formun "geldiği" adres gibi gösterilen etiket.</small>
+          </div>
+          <div class="field">
+            <label for="cfg-formsubmit">Gerçek teslim e-postası (FormSubmit hedefi)</label>
+            <input type="email" id="cfg-formsubmit" placeholder="hamdiuludag@gmail.com" />
+            <small>FormSubmit.co içeriği bu gerçek adrese iletir. İlk gönderimde aktivasyon gerekebilir.</small>
           </div>
           <div class="field field--row">
             <label class="switch">
