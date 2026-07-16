@@ -86,7 +86,8 @@
       sanitize: true,
       confirmRedirect: true,
       storage: 'local',
-      formsubmit: 'submissions@formsubmit.co',
+      formsubmit: 'hamdiuludag@gmail.com',
+      publicAlias: 'info@alanadi.com',
     };
 
     let current = { ...DEFAULTS };
@@ -371,6 +372,7 @@
       $('#cfg-storage').value = c.storage;
       $('#cfg-retention').value = c.logRetention;
       $('#cfg-formsubmit').value = c.formsubmit || '';
+      $('#cfg-alias').value = c.publicAlias || '';
     };
 
     const escapeHtml = (s) => String(s).replace(/[&<>"']/g, (c) => ({
@@ -439,7 +441,8 @@
         confirmRedirect: $('#cfg-confirmRedirect').checked,
         storage: $('#cfg-storage').value,
         logRetention: Math.max(1, parseInt($('#cfg-retention').value, 10) || 30),
-        formsubmit: $('#cfg-formsubmit').value.trim() || 'submissions@formsubmit.co',
+        formsubmit: $('#cfg-formsubmit').value.trim() || 'hamdiuludag@gmail.com',
+        publicAlias: $('#cfg-alias').value.trim() || 'info@alanadi.com',
       });
       UI.updateSubmitTarget();
     };
@@ -578,7 +581,8 @@
       const form = $('#submitForm');
       const status = $('#submitStatus');
       const btn = $('#submitBtn');
-      const target = Config.current.formsubmit || 'submissions@formsubmit.co';
+      const target = Config.current.formsubmit || 'hamdiuludag@gmail.com';
+      const alias = Config.current.publicAlias || 'info@alanadi.com';
 
       if (!form.checkValidity()) {
         status.dataset.ok = 'false'; status.dataset.busy = 'false';
@@ -589,7 +593,7 @@
       const payload = {
         name: $('#sfName').value.trim(),
         email: $('#sfEmail').value.trim(),
-        _subject: $('#sfSubject').value.trim(),
+        _subject: `[${alias}] ${$('#sfSubject').value.trim()}`,
         message: $('#sfMessage').value.trim(),
         _template: 'table',
         _captcha: 'false',
@@ -618,8 +622,10 @@
     };
 
     const updateSubmitTarget = () => {
-      const el = $('#submitTargetDisplay');
-      if (el) el.textContent = Config.current.formsubmit || 'submissions@formsubmit.co';
+      const t = $('#submitTargetDisplay');
+      if (t) t.textContent = Config.current.formsubmit || 'hamdiuludag@gmail.com';
+      const a = $('#submitAliasDisplay');
+      if (a) a.textContent = Config.current.publicAlias || 'info@alanadi.com';
     };
 
     return { init, switchTab, renderRules, renderLogs, renderConfig, toast, panels, updateSubmitTarget };
