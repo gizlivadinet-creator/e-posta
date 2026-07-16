@@ -1,6 +1,14 @@
 // Service Worker — offline cache for Posta Yönlendirme
-const CACHE = 'pys-v1';
-const ASSETS = ['./', './index.html', './style.css', './script.js'];
+const CACHE = 'pys-v2';
+const ASSETS = [
+  './',
+  './index.html',
+  './404.html',
+  './style.css',
+  './script.js',
+  './manifest.webmanifest',
+  './icon.svg',
+];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(

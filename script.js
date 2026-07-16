@@ -393,7 +393,10 @@
     };
     const closeModal = () => { $('#ruleModal').close(); };
 
-    const saveRuleFromForm = () => {
+    const saveRuleFromForm = (e) => {
+      // method="dialog" formları varsayılan olarak her submit'te kapanır;
+      // bunu engelleyip kapatmayı yalnızca doğrulama başarılıysa biz yönetiyoruz.
+      if (e) e.preventDefault();
       const rule = {
         name: $('#ruleName').value.trim(),
         pattern: $('#rulePattern').value.trim(),
@@ -432,7 +435,7 @@
     const onConfigInput = () => {
       Config.save({
         domain: $('#cfg-domain').value.trim(),
-        routerPrefix: $('#cfg-prefix').value.trim() || 'router',
+        routerPrefix: ($('#cfg-prefix').value.trim().replace(/^\/+|\/+$/g, '').replace(/\//g, '-')) || 'router',
         logEnabled: $('#cfg-logEnabled').checked,
         fallbackEnabled: $('#cfg-fallbackEnabled').checked,
         fallback: $('#cfg-fallback').value.trim(),
@@ -479,8 +482,7 @@
       reader.readAsText(file);
     };
 
-    const onRouterSubmit = (e) => {
-      e.preventDefault();
+    const resolveRouterInput = () => {
       const out = $('#routerResult');
       try {
         const res = Router.resolve($('#routerTo').value);
@@ -505,12 +507,31 @@
       }
     };
 
+    const onRouterSubmit = (e) => {
+      e.preventDefault();
+      resolveRouterInput();
+    };
+
+    // Yönlendirici linkinin temel URL'sini üretir. Ayarlar'da bir alan adı
+    // girilmişse onu kullanır; girilmemişse GitHub Pages proje sayfalarında
+    // (ör. kullanici.github.io/repo/) alt dizinin kaybolmaması için mevcut
+    // sayfanın origin + yol bilgisini otomatik algılar.
+    const routerBaseUrl = () => {
+      const domain = (Config.current.domain || '').trim().replace(/\/+$/, '');
+      if (domain) {
+        const withScheme = /^https?:\/\//i.test(domain) ? domain : `https://${domain}`;
+        return withScheme;
+      }
+      const path = location.pathname.replace(/(index\.html|404\.html)$/i, '').replace(/\/+$/, '');
+      return `${location.origin}${path}`;
+    };
+
     const onRouterCopy = async () => {
       const val = $('#routerTo').value;
       if (!val) { toast('Önce adres girin', 'error'); return; }
       const prefix = Config.current.routerPrefix || 'router';
-      const domain = Config.current.domain ? `https://${Config.current.domain}` : '';
-      const link = `${domain}/${prefix}?to=${encodeURIComponent(Router.normalize(val))}`;
+      const base = routerBaseUrl();
+      const link = `${base}/${prefix}?to=${encodeURIComponent(Router.normalize(val))}`;
       try {
         await navigator.clipboard.writeText(link);
         toast('Bağlantı kopyalandı', 'success');
@@ -574,6 +595,16 @@
       const hash = location.hash.slice(1);
       switchTab(['rules', 'submit', 'config', 'logs', 'router'].includes(hash) ? hash : 'rules');
       renderRules(); renderConfig(); renderLogs(); updateSubmitTarget();
+
+      // Paylaşılan bağlantı desteği: .../404.html üzerinden ?to=... ile
+      // gelindiyse Yönlendirici sekmesine geç, adresi doldur ve çöz.
+      const sharedTo = new URLSearchParams(location.search).get('to');
+      if (sharedTo) {
+        switchTab('router');
+        $('#routerTo').value = sharedTo;
+        resolveRouterInput();
+        Log.info('router.deeplink', sharedTo);
+      }
     };
 
     const onSubmitForm = async (e) => {

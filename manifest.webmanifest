@@ -1,0 +1,27 @@
+{
+  "name": "Posta Yönlendirme Yöneticisi",
+  "short_name": "Posta Yönlendirme",
+  "description": "GitHub Pages üzerinde çalışan statik e-posta yönlendirme yönetim sistemi",
+  "lang": "tr",
+  "dir": "ltr",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#0f172a",
+  "theme_color": "#0f172a",
+  "icons": [
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ]
+}
