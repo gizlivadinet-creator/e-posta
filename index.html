@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="GitHub Pages üzerinde çalışan statik e-posta yönlendirme yönetim sistemi" />
+  <meta name="theme-color" content="#0f172a" />
+  <title>Posta Yönlendirme Yöneticisi</title>
+  <link rel="manifest" href="manifest.webmanifest" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="topbar__inner">
+      <a href="#" class="brand" aria-label="Ana sayfa">
+        <span class="brand__mark" aria-hidden="true">⇄</span>
+        <span class="brand__name">Posta Yönlendirme</span>
+      </a>
+      <nav class="tabs" role="tablist" aria-label="Bölümler">
+        <button class="tabs__btn is-active" role="tab" aria-selected="true" data-tab="rules">Kurallar</button>
+        <button class="tabs__btn" role="tab" aria-selected="false" data-tab="submit">Gönder</button>
+        <button class="tabs__btn" role="tab" aria-selected="false" data-tab="config">Ayarlar</button>
+        <button class="tabs__btn" role="tab" aria-selected="false" data-tab="logs">Günlük</button>
+        <button class="tabs__btn" role="tab" aria-selected="false" data-tab="router">Yönlendirici</button>
+      </nav>
+      <button class="topbar__theme" id="themeToggle" type="button" aria-label="Tema değiştir">☾</button>
+    </div>
+  </header>
+
+  <main class="app">
+    <!-- Rules Tab -->
+    <section class="panel is-active" id="tab-rules" role="tabpanel" aria-labelledby="tab-rules">
+      <div class="panel__head">
+        <div>
+          <h1 class="panel__title">Yönlendirme Kuralları</h1>
+          <p class="panel__subtitle">Gelen e-postaları adrese göre hedeflere yönlendir. Kurallar tarayıcıda saklanır ve yönlendirici tarafından kullanılır.</p>
+        </div>
+        <button class="btn btn--primary" id="addRuleBtn" type="button">+ Yeni Kural</button>
+      </div>
+
+      <div class="toolbar">
+        <label class="search">
+          <span class="search__icon" aria-hidden="true">⌕</span>
+          <input type="search" id="ruleSearch" placeholder="Kural ara..." aria-label="Kurallarda ara" />
+        </label>
+        <div class="toolbar__actions">
+          <button class="btn btn--ghost" id="exportBtn" type="button">Dışa Aktar</button>
+          <button class="btn btn--ghost" id="importBtn" type="button">İçe Aktar</button>
+          <input type="file" id="importFile" accept="application/json" hidden />
+        </div>
+      </div>
+
+      <div class="rules" id="rulesList" aria-live="polite"></div>
+
+      <div class="empty" id="rulesEmpty" hidden>
+        <div class="empty__mark" aria-hidden="true">⌶</div>
+        <h2>Henüz kural yok</h2>
+        <p>İlk yönlendirme kuralını ekleyerek başlayın.</p>
+        <button class="btn btn--primary" data-add-first type="button">+ Kural Ekle</button>
+      </div>
+    </section>
+
+    <!-- Submit Tab -->
+    <section class="panel" id="tab-submit" role="tabpanel" aria-labelledby="tab-submit" hidden>
+      <div class="panel__head">
+        <div>
+          <h1 class="panel__title">Form Gönder</h1>
+          <p class="panel__subtitle">Form verileri FormSubmit.co üzerinden <code id="submitTargetDisplay">submissions@formsubmit.co</code> adresine e-posta olarak gönderilir.</p>
+        </div>
+      </div>
+
+      <form class="submit-form" id="submitForm" novalidate>
+        <div class="field">
+          <label for="sfName">Ad</label>
+          <input type="text" id="sfName" name="name" autocomplete="name" required />
+        </div>
+        <div class="field">
+          <label for="sfEmail">E-posta</label>
+          <input type="email" id="sfEmail" name="email" autocomplete="email" required />
+        </div>
+        <div class="field">
+          <label for="sfSubject">Konu</label>
+          <input type="text" id="sfSubject" name="_subject" placeholder="Mesaj konusu" required />
+        </div>
+        <div class="field">
+          <label for="sfMessage">Mesaj</label>
+          <textarea id="sfMessage" name="message" rows="5" required></textarea>
+        </div>
+        <input type="hidden" name="_template" value="table" />
+        <input type="hidden" name="_captcha" value="false" />
+        <div class="submit-form__actions">
+          <button class="btn btn--primary" type="submit" id="submitBtn">Gönder</button>
+          <span class="submit-form__status" id="submitStatus" role="status" aria-live="polite"></span>
+        </div>
+      </form>
+      <div class="hint">
+        <strong>Not:</strong> FormSubmit.co bir üçüncü taraf servisidir. İlk gönderimde aktivasyon e-postası gerekebilir. Hedef adresi <strong>Ayarlar</strong> sekmesinden değiştirebilirsiniz.
+      </div>
+    </section>
+
+    <!-- Config Tab -->
+    <section class="panel" id="tab-config" role="tabpanel" aria-labelledby="tab-config" hidden>
+      <div class="panel__head">
+        <div>
+          <h1 class="panel__title">Ayarlar</h1>
+          <p class="panel__subtitle">Sistemin davranışını tek bir yerden yapılandırın. Değişiklikler otomatik kaydedilir.</p>
+        </div>
+        <button class="btn btn--ghost" id="resetConfigBtn" type="button">Varsayılana Dön</button>
+      </div>
+
+      <form class="config" id="configForm">
+        <fieldset class="card">
+          <legend>Genel</legend>
+          <div class="field">
+            <label for="cfg-domain">Kök alan adı</label>
+            <input type="text" id="cfg-domain" placeholder="kullanici.github.io" />
+            <small>Yönlendirici bağlantılarını oluşturmak için kullanılır.</small>
+          </div>
+          <div class="field">
+            <label for="cfg-prefix">Yönlendirici yolu</label>
+            <input type="text" id="cfg-prefix" placeholder="router" />
+            <small>Örn. <code>router</code> → <code>/router?to=...</code></small>
+          </div>
+          <div class="field">
+            <label for="cfg-formsubmit">FormSubmit hedef adresi</label>
+            <input type="email" id="cfg-formsubmit" placeholder="submissions@formsubmit.co" />
+            <small>Form gönderimlerinin iletileceği FormSubmit.co e-posta adresi.</small>
+          </div>
+          <div class="field field--row">
+            <label class="switch">
+              <input type="checkbox" id="cfg-logEnabled" />
+              <span class="switch__track" aria-hidden="true"></span>
+              <span>Günlük kaydını etkinleştir</span>
+            </label>
+          </div>
+          <div class="field field--row">
+            <label class="switch">
+              <input type="checkbox" id="cfg-fallbackEnabled" />
+              <span class="switch__track" aria-hidden="true"></span>
+              <span>Eşleşmeyen adresler için varsayılan hedef</span>
+            </label>
+          </div>
+          <div class="field">
+            <label for="cfg-fallback">Varsayılan hedef (mailto)</label>
+            <input type="email" id="cfg-fallback" placeholder="ana@kullanici.github.io" />
+          </div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend>Güvenlik</legend>
+          <div class="field">
+            <label for="cfg-rateLimit">Saniyede maksimum yönlendirme</label>
+            <input type="number" id="cfg-rateLimit" min="1" max="60" />
+            <small>Aşırı kullanımı önlemek için yönlendirici hızı.</small>
+          </div>
+          <div class="field field--row">
+            <label class="switch">
+              <input type="checkbox" id="cfg-sanitize" />
+              <span class="switch__track" aria-hidden="true"></span>
+              <span>Hedef adresleri sterilize et (XSS koruması)</span>
+            </label>
+          </div>
+          <div class="field field--row">
+            <label class="switch">
+              <input type="checkbox" id="cfg-confirmRedirect" />
+              <span class="switch__track" aria-hidden="true"></span>
+              <span>Yönlendirmeden önce onay ekranı göster</span>
+            </label>
+          </div>
+        </fieldset>
+
+        <fieldset class="card">
+          <legend>Saklama</legend>
+          <div class="field">
+            <label for="cfg-storage">Saklama yöntemi</label>
+            <select id="cfg-storage">
+              <option value="local">localStorage (kalıcı)</option>
+              <option value="session">sessionStorage (sekme kapanınca silinir)</option>
+              <option value="memory">Bellek (yenilenince silinir)</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="cfg-retention">Günlük saklama (gün)</label>
+            <input type="number" id="cfg-retention" min="1" max="365" />
+            <small>Belirtilen günden eski günlük kayıtları otomatik silinir.</small>
+          </div>
+        </fieldset>
+      </form>
+    </section>
+
+    <!-- Logs Tab -->
+    <section class="panel" id="tab-logs" role="tabpanel" aria-labelledby="tab-logs" hidden>
+      <div class="panel__head">
+        <div>
+          <h1 class="panel__title">Günlük</h1>
+          <p class="panel__subtitle">Yönlendirme ve hata olayları. Yalnızca bu tarayıcıda saklanır.</p>
+        </div>
+        <div class="toolbar__actions">
+          <button class="btn btn--ghost" id="clearLogsBtn" type="button">Temizle</button>
+        </div>
+      </div>
+      <div class="log" id="logList" aria-live="polite"></div>
+      <div class="empty" id="logsEmpty" hidden>
+        <div class="empty__mark" aria-hidden="true">⌚</div>
+        <h2>Kayıt yok</h2>
+        <p>Henüz bir olay kaydedilmedi.</p>
+      </div>
+    </section>
+
+    <!-- Router Tab -->
+    <section class="panel" id="tab-router" role="tabpanel" aria-labelledby="tab-router" hidden>
+      <div class="panel__head">
+        <div>
+          <h1 class="panel__title">Yönlendirici</h1>
+          <p class="panel__subtitle">Bir alıcı adresi girin; eşleşen kuralın hedefine yönlendirilir.</p>
+        </div>
+      </div>
+      <form class="router" id="routerForm">
+        <div class="field">
+          <label for="routerTo">Alıcı adresi</label>
+          <input type="text" id="routerTo" placeholder="destek@kullanici.github.io" required />
+          <small>Yerel adres (<code>ad@kök</code>) veya tam <code>mailto:</code> bağlantısı.</small>
+        </div>
+        <div class="router__actions">
+          <button class="btn btn--primary" type="submit">Yönlendir</button>
+          <button class="btn btn--ghost" type="button" id="routerCopy">Bağlantıyı Kopyala</button>
+        </div>
+        <output class="router__result" id="routerResult" aria-live="polite"></output>
+      </form>
+      <div class="hint">
+        <strong>Not:</strong> GitHub Pages bir SMTP sunucusu çalıştıramaz. Yönlendirici, <code>mailto:</code> bağlantıları ve opsiyononel onay ekranı ile çalışır; gerçek e-posta iletme için bir dış servis gerekir (bkz. README).
+      </div>
+    </section>
+  </main>
+
+  <!-- Rule Modal -->
+  <dialog class="modal" id="ruleModal" aria-labelledby="modalTitle">
+    <form class="modal__form" id="ruleForm" method="dialog">
+      <header class="modal__head">
+        <h2 class="modal__title" id="modalTitle">Kural</h2>
+        <button class="modal__close" type="button" data-close-modal aria-label="Kapat">×</button>
+      </header>
+      <div class="modal__body">
+        <input type="hidden" id="ruleId" />
+        <div class="field">
+          <label for="ruleName">Etiket</label>
+          <input type="text" id="ruleName" placeholder="Destek hattı" required />
+        </div>
+        <div class="field">
+          <label for="rulePattern">Eşleşme deseni</label>
+          <input type="text" id="rulePattern" placeholder="destek@*" required />
+          <small><code>*</code> joker olarak kullanılır. Örn. <code>destek@*</code>, <code>*@satış.example</code>, <code>bilgi@kullanici.github.io</code>.</small>
+        </div>
+        <div class="field">
+          <label for="ruleTarget">Hedef (mailto)</label>
+          <input type="email" id="ruleTarget" placeholder="gerçek@adres.com" required />
+        </div>
+        <div class="field field--row">
+          <label class="switch">
+            <input type="checkbox" id="ruleEnabled" checked />
+            <span class="switch__track" aria-hidden="true"></span>
+            <span>Etkin</span>
+          </label>
+        </div>
+      </div>
+      <footer class="modal__foot">
+        <button class="btn btn--ghost" type="button" data-close-modal>İptal</button>
+        <button class="btn btn--primary" type="submit">Kaydet</button>
+      </footer>
+    </form>
+  </dialog>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <script src="script.js" defer></script>
+</body>
+</html>
