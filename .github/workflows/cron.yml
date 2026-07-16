@@ -20,7 +20,7 @@ jobs:
       - name: Dosya bütünlüğü kontrolü
         run: |
           set -e
-          for f in index.html style.css script.js sw.js README.md; do
+          for f in index.html 404.html style.css script.js sw.js manifest.webmanifest icon.svg README.md; do
             if [ ! -f "$f" ]; then
               echo "Eksik dosya: $f" >&2
               exit 1
@@ -49,7 +49,10 @@ jobs:
           if ! grep -q 'manifest.webmanifest' index.html; then
             echo "manifest bağlantısı eksik" >&2; exit 1;
           fi
-          echo "Manifest referansı mevcut."
+          if command -v python3 >/dev/null 2>&1; then
+            python3 -c "import json; json.load(open('manifest.webmanifest'))"
+          fi
+          echo "Manifest referansı ve dosyası geçerli."
 
       - name: Özet
         run: |
