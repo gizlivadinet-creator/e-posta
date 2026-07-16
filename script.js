@@ -659,7 +659,7 @@
       if (a) a.textContent = Config.current.publicAlias || 'info@alanadi.com';
     };
 
-    return { init, switchTab, renderRules, renderLogs, renderConfig, toast, panels, updateSubmitTarget };
+    return { init, switchTab, renderRules, renderLogs, renderConfig, toast, panels, updateSubmitTarget, initTheme };
   })();
 
   // ---------- Boot ----------
