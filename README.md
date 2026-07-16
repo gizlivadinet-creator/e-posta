@@ -30,7 +30,7 @@ Sistem beş bölümden oluşur:
 - **Ayarlar** — Kök alan adı, yönlendirici yolu, hız sınırı, sterilizasyon (XSS koruması), onay ekranı, varsayılan hedef, günlük saklama süresi, saklama yöntemi. Tek bölüm, otomatik kayıt.
 - **Günlük** — Yönlendirme, hata ve yapılandırma olayları. Yalnızca tarayıcıda saklanır; belirtilen süreden eski kayıtlar otomatik silinir.
 - **Yönlendirici** — Bir alıcı adresi girildiğinde kurallarla eşleştirir ve `mailto:` bağlantısına yönlendirir. "Bağlantıyı Kopyala" ile paylaşılabilir bir `/router?to=...` bağlantısı üretir.
-- **Gönder** — Form verilerini [FormSubmit.co](https://formsubmit.co) AJAX uç noktasından `submissions@formsubmit.co` adresine (Ayarlar'dan değiştirilebilir) e-posta olarak iletir. Backend gerektirmeden gerçek e-posta teslimi sağlar.
+- **Gönder** — Form verilerini [FormSubmit.co](https://formsubmit.co) AJAX uç noktasından gerçek e-posta adresinize iletir. Halka açık sahte adres (`info@alanadi.com`) formun "geldiği" yer olarak gösterilir; FormSubmit içeriği gerçek teslim adresine (`hamdiuludag@gmail.com`) gönderir. Her iki değer de **Ayarlar** sekmesinden değiştirilebilir.
 
 ### Mimari
 
@@ -56,7 +56,7 @@ GitHub Pages **yalnızca statik dosya sunar**. Aşağıdakiler teknik olarak **m
 - **Cloudflare veya harici e-posta API'si kullanmak** — Kısıtlama bunu yasaklar.
 - **Sunucu tarafı yönlendirme** — Çalışma zamanında backend yoktur.
 
-**İstisna — FormSubmit.co:** Kullanıcının talebiyle, **Gönder** sekmesindeki form FormSubmit.co'un ücretsiz AJAX uç noktasına POST yapar ve verileri `submissions@formsubmit.co` adresine e-posta olarak iletir. Bu, GitHub Pages'in statik sınırını aşmak için kullanılan üçüncü taraf bir servis örneğidir; backend gerektirmez. İlk gönderimde FormSubmit hedef adresi aktivasyon e-postası gönderir. Hedef adres **Ayarlar** sekmesinden değiştirilebilir.
+**İstisna — FormSubmit.co:** Kullanıcının talebiyle, **Gönder** sekmesindeki form FormSubmit.co'un ücretsiz AJAX uç noktasına POST yapar ve verileri gerçek e-posta adresinize iletir. Akış: kullanıcı formu doldurur → form `info@alanadi.com` adresinden gelmiş gibi etiketlenir → FormSubmit içeriği `hamdiuludag@gmail.com` adresine teslim eder. Bu, GitHub Pages'in statik sınırını aşmak için kullanılan üçüncü taraf bir servis örneğidir; backend gerektirmez. İlk gönderimde FormSubmit hedef adresi aktivasyon e-postası gönderir. Hem sahte/halka açık adres hem de gerçek teslim adresi **Ayarlar** sekmesinden değiştirilebilir.
 
 Bu nedenle bu sistem **gerçek e-posta iletimi yapmaz**. Bunun yerine, GitHub Pages sınırlarına uygun şu yaklaşımı sunar:
 
